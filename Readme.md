@@ -1,3 +1,40 @@
+# Fork Notes
+
+This fork contains very basic wildcard support for events. Does not directly support regular expressions due to the way namespaces are created. Example usage below.
+
+```
+/* basic message passing server that takes all incoming namespaces and creates an outgoing of the same name plus '_catch'
+ * useful for pattern matching and not having to write redundant code each time a new namespace is needed
+ */
+var app = require('http').createServer(handler)
+  , io = require('socket.io').listen(app)
+  , fs = require('fs')
+
+app.listen(1337);
+
+function handler (req, res) {
+  res.end('not implemented');
+}
+
+var wildcard_echo_handler = '_catch';
+
+function endsWith (str, suffix) {
+  console.log(str.indexOf(suffix, str.length - suffix.length) != -1);
+    return str.indexOf(suffix, str.length - suffix.length) != -1;
+}
+
+io.sockets.on('connection', function (socket) {
+  /* wildcard namespace is named '*' */
+  socket.on('*', function(data){
+  	var args = Array.prototype.slice.call(arguments);
+  	var event_name = args.pop();
+  	/* dont emit events that have already been echod */
+  	if (!endsWith(event_name,wildcard_echo_handler) )
+  		io.sockets.emit(event_name+wildcard_echo_handler,args);
+  });
+});
+```
+
 # Socket.IO
 
 Socket.IO is a Node.JS project that makes WebSockets and realtime possible in
